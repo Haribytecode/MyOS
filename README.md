@@ -42,8 +42,7 @@ MyOS/
 ├─ Makefile
 └─ myos.iso
 
-yaml
-Copy code
+
 
 ---
 
