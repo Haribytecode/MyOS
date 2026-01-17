@@ -1,0 +1,38 @@
+#include <stdint.h>
+volatile unsigned int *uart0=(unsigned int *)0x101f1000;
+void uart_putc(char c){
+    *uart0=c;
+}
+void uart_puts(const char *s){
+    while(*s)
+        uart_putc(*s++);
+    
+}
+void uart_puthex(uint32_t v){
+    const char hex[]="0123456789ABCDEF";
+    uart_puts("0x");
+    for(int i=7;i>=0;--i){
+        uint8_t nib=(v>>(i*4))&0xF;
+        uart_putc(hex[nib]);
+    }
+}
+#define ALIGN_UP(x,a) (((x)+((a)-1)) & ~((a)-1))
+static uint32_t next_free=0x00200000;
+void *simple_alloc(uint32_t size){
+    const uint32_t align=8;
+    uint32_t addr=ALIGN_UP(next_free,align);
+    next_free=addr+ALIGN_UP(size,align);
+    return (void *)(uintptr_t)addr;
+}
+void kernel_main(void){
+    uart_puts("Day12:Bump allocation done\n");
+    void *a=simple_alloc(64);
+        uart_puts("Alloc A="); uart_puthex((uint32_t)(uintptr_t)a);
+    void *b=simple_alloc(128);
+        uart_puts("Alloc B="); uart_puthex((uint32_t)(uintptr_t)b);
+    void *c=simple_alloc(1000);
+        uart_puts("Alloc C="); uart_puthex((uint32_t)(uintptr_t)c);
+    uart_puts("next_free="); uart_puthex(next_free); uart_puts("\n");
+    while(1);
+    
+}

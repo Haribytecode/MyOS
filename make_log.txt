@@ -1,0 +1,25 @@
+gcc -m32 -ffreestanding -c boot.S -o boot.o
+gcc -m32 -std=gnu11 -O2 -ffreestanding -fno-builtin -Wall -Wextra -Wno-int-conversion -nostdlib -c kernel.c -o kernel.o
+kernel.c: In function ‘kernel_main’:
+kernel.c:18:5: warning: implicit declaration of function ‘uart_puts’ [-Wimplicit-function-declaration]
+   18 |     uart_puts("Day12:Bump allocation done\n");
+      |     ^~~~~~~~~
+kernel.c:20:28: warning: implicit declaration of function ‘uart_puthex’ [-Wimplicit-function-declaration]
+   20 |     uart_puts("Alloc A="); uart_puthex((uint32_t)(uintptr_t)a);
+      |                            ^~~~~~~~~~~
+kernel.c: At top level:
+kernel.c:38:6: warning: conflicting types for ‘uart_puts’; have ‘void(const char *)’
+   38 | void uart_puts(const char *s) {
+      |      ^~~~~~~~~
+kernel.c:18:5: note: previous implicit declaration of ‘uart_puts’ with type ‘void(const char *)’
+   18 |     uart_puts("Day12:Bump allocation done\n");
+      |     ^~~~~~~~~
+kernel.c:42:6: warning: conflicting types for ‘uart_puthex’; have ‘void(uint32_t)’ {aka ‘void(unsigned int)’}
+   42 | void uart_puthex(uint32_t v) {
+      |      ^~~~~~~~~~~
+kernel.c:20:28: note: previous implicit declaration of ‘uart_puthex’ with type ‘void(uint32_t)’ {aka ‘void(unsigned int)’}
+   20 |     uart_puts("Alloc A="); uart_puthex((uint32_t)(uintptr_t)a);
+      |                            ^~~~~~~~~~~
+ld -m elf_i386 -T linker.ld -o kernel.elf boot.o kernel.o
+ld:linker.ld:15: syntax error
+make: *** [Makefile:21: kernel.elf] Error 1
