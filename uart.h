@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-// This tells other files that these functions exist somewhere else
+
 
 void uart_init();
 void uart_putc(char c);
