@@ -6,21 +6,16 @@
 #include "pic.h"
 #include "uart.h"
 
-/* VGA helper implemented in the keyboard.c */
 extern void vga_clear(void);
 extern void kprint(const char* str);
 
-/* This variable already exist in the keyboard.c */
 extern int vga_pos;
 
-/* Here Hardware */
 extern void outb(unsigned short port, unsigned char val);
 
 static int in_irq = 0;
 
-/* ===============================
-   (MY IMAGE)BINARY FACE (64 x 24)
-   =============================== */
+
 static const char *boot_face[] = {
 "0000000000000000000000000000000000000000",
 "0000000000000000000011111100000000000000",
@@ -50,16 +45,11 @@ static const char *boot_face[] = {
 };
 
 
-/* ===============================
-   VGA CURSOR CONTROL (real fix)
-   =============================== */
+
 static inline void vga_set_cursor(int row, int col) {
     vga_pos = row * 80 + col;
 }
 
-/* ===============================
-   BOOT DELAY (safe) just did to be noticed
-   =============================== */
 static void boot_delay(void) {
  for (volatile uint32_t i = 0; i < 400000000; i++)
  {
@@ -67,9 +57,7 @@ static void boot_delay(void) {
     }
 }
 
-/* ===============================
-   SHOW BOOT FACE (CENTERED)
-   =============================== */
+
 static void show_boot_face(void) {
     vga_clear();
 
@@ -78,7 +66,7 @@ static void show_boot_face(void) {
 
     const int screen_width = 80;
 
-    int start_col = (screen_width - face_width) / 2;  // = 8
+    int start_col = (screen_width - face_width) / 2;  
     int start_row = 0;
 
     for (int i = 0; i < face_height; i++) {
@@ -92,14 +80,12 @@ static void show_boot_face(void) {
     boot_delay();
 }
 
-/* ===============================
-   TIMER IRQ
-   =============================== */
+
 void timer_handler(void) {
     if (in_irq) return;
     in_irq = 1;
 
-    outb(0x20, 0x20);   // EOI
+    outb(0x20, 0x20);  
 
     task_t* old = current_task();
     task_t* next = next_task();
@@ -108,18 +94,16 @@ void timer_handler(void) {
     switch_task(old, next);
 }
 
-/* ===============================
-   KERNEL ENTRY It is the main function 
-   =============================== */
+
 void kernel_main(void) {
     gdt_init();
     idt_init();
     pic_init();
     uart_init();
 
-    /* SIGNATURE */
+
     show_boot_face();
-    vga_clear();              // ← brings shell to visible screen
+    vga_clear();             
 
 
    
