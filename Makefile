@@ -24,8 +24,8 @@ kernel.elf: $(OBJS)
 
 # Use this to build the final ISO
 iso: kernel.elf
-	cp kernel.elf iso/boot/kernel.elf
-	grub-mkrescue -o myos.iso iso
+	cp kernel.elf iso_root/boot/kernel.elf
+	grub-mkrescue -o myos.iso iso_root
 
 clean:
 	rm -f *.o kernel.elf myos.iso
