@@ -7,7 +7,6 @@
 
 int vga_pos = 0;
 
-/* --- Hardware I/O Helpers --- */
 static inline uint8_t inb(uint16_t port) {
     uint8_t ret;
     __asm__ volatile("inb %1, %0" : "=a"(ret) : "Nd"(port));
@@ -17,8 +16,7 @@ static inline uint8_t inb(uint16_t port) {
 static inline void outb(uint16_t port, uint8_t val) {
     __asm__ volatile("outb %0, %1" : : "a"(val), "Nd"(port));
 }
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/* --- VGA SCREEN DRIVER --- */ 
+
 void vga_clear() {
     volatile uint16_t* buffer = (volatile uint16_t*)VGA_ADDRESS;
     for (int i = 0; i < VGA_WIDTH * VGA_HEIGHT; i++) {
@@ -44,8 +42,7 @@ void vga_putc(char c) {
 
 
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/* --- RTC (Clock) Helpers --- */
+
 uint8_t get_rtc_register(int reg) {
     outb(0x70, reg);
     return inb(0x71);
@@ -74,7 +71,7 @@ void kprint_dec(int n) {
     }
 }
 
-/* --- Keyboard Scancode Map (Set 1) --- */
+
 unsigned char kbd_map[128] = {
     0, 27, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '\b',
     '\t', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\n',
@@ -90,7 +87,6 @@ int str_equal(char *s1, char *s2) {
     return *s1 == *s2;
 }
 
-/* --- Shell Logic with Full Correctness --- */
 void run_shell_command(char *buf) {
     if (str_equal(buf, "help")) {
         kprint("\nCommands: help, version, clear, time, date, mem, tasks");
