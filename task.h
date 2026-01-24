@@ -12,7 +12,7 @@ task_t* current_task(void);
 task_t* next_task(void);
 void switch_task(task_t* old, task_t* next);
 
-// ADD THIS LINE:
+
 void task_a(void); 
 
 #endif
