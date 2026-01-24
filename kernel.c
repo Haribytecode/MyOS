@@ -6,20 +6,20 @@
 #include "pic.h"
 #include "uart.h"
 
-/* VGA helpers implemented in keyboard.c */
+/* VGA helper implemented in the keyboard.c */
 extern void vga_clear(void);
 extern void kprint(const char* str);
 
-/* This variable already exists in keyboard.c */
+/* This variable already exist in the keyboard.c */
 extern int vga_pos;
 
-/* Hardware */
+/* Here Hardware */
 extern void outb(unsigned short port, unsigned char val);
 
 static int in_irq = 0;
 
 /* ===============================
-   BINARY FACE (64 x 24)
+   (MY IMAGE)BINARY FACE (64 x 24)
    =============================== */
 static const char *boot_face[] = {
 "0000000000000000000000000000000000000000",
@@ -51,14 +51,14 @@ static const char *boot_face[] = {
 
 
 /* ===============================
-   VGA CURSOR CONTROL (REAL FIX)
+   VGA CURSOR CONTROL (real fix)
    =============================== */
 static inline void vga_set_cursor(int row, int col) {
     vga_pos = row * 80 + col;
 }
 
 /* ===============================
-   BOOT DELAY (SAFE)
+   BOOT DELAY (safe) just did to be noticed
    =============================== */
 static void boot_delay(void) {
  for (volatile uint32_t i = 0; i < 400000000; i++)
@@ -109,7 +109,7 @@ void timer_handler(void) {
 }
 
 /* ===============================
-   KERNEL ENTRY
+   KERNEL ENTRY It is the main function 
    =============================== */
 void kernel_main(void) {
     gdt_init();
@@ -119,7 +119,7 @@ void kernel_main(void) {
 
     /* SIGNATURE */
     show_boot_face();
-    vga_clear();              // ← bring shell to visible screen
+    vga_clear();              // ← brings shell to visible screen
 
 
    
