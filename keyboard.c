@@ -17,8 +17,8 @@ static inline uint8_t inb(uint16_t port) {
 static inline void outb(uint16_t port, uint8_t val) {
     __asm__ volatile("outb %0, %1" : : "a"(val), "Nd"(port));
 }
-
-/* --- VGA SCREEN DRIVER --- */
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/* --- VGA SCREEN DRIVER --- */ 
 void vga_clear() {
     volatile uint16_t* buffer = (volatile uint16_t*)VGA_ADDRESS;
     for (int i = 0; i < VGA_WIDTH * VGA_HEIGHT; i++) {
@@ -39,9 +39,12 @@ void vga_putc(char c) {
     } else {
         buffer[vga_pos++] = (uint16_t)c | (uint16_t)0x0A << 8;
     }
-    if (vga_pos >= VGA_WIDTH * VGA_HEIGHT) vga_pos = 0;
+
 }
 
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /* --- RTC (Clock) Helpers --- */
 uint8_t get_rtc_register(int reg) {
     outb(0x70, reg);
