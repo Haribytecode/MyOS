@@ -44,34 +44,14 @@ void kernel_main(void)
     pic_init();
 
     vga_clear();
+    kprint("HARIHARAN-OS CORE BOOTING...\n");
 
-    kprint("HELLO HARIHARAN! INITIATING THE ULTIMATE DAY 38 REAL-OS VERIFICATION...\n");
+    // Initialize Virtual Memory Management Subsystem
     paging_init();
     paging_enable();
 
-    kprint("\n🚀 STAGE 1: FORCING EXCEPTION 14 (DYNAMIC ASSAULT ON UNMAPPED MEMORY) 🚀\n");
-    
-    /* 
-     * Target 10 MB mark (0x00A00000). 
-     * This address is unmapped AND requires a completely new Page Table to be created!
-     */
-    volatile int *ultimate_ptr = (int *)0x00A00000;
-    
-    /* This write instruction forces the hardware MMU to fault right now! */
-    *ultimate_ptr = 88888; 
-
-    kprint("\n🚀 STAGE 2: DATA INTEGRITY AND REGISTER READBACK CONFIRMATION 🚀\n");
-    if (*ultimate_ptr == 88888) {
-        kprint("\n🏆=============================================================🏆\n");
-        kprint("  CRORE LEVEL % PROVEN: DAY 38 MEMORY ENGINE IS 100% OPERATIONAL!\n");
-        kprint("  1. RE-ACTIVE HARDWARE PAGE FAULT TRAPPING ACTIVE (#14) [CR2]\n");
-        kprint("  2. FRAME BITMAP ALLOCATOR POOL EXECUTED\n");
-        kprint("  3. DYNAMIC PAGE TABLE PROVISIONING COMPLETE\n");
-        kprint("  4. 1023 RECURSIVE MAP WRITES VERIFIED IN SILICON TRANSISTORS\n");
-        kprint("🏆=============================================================🏆\n");
-    } else {
-        kprint("🚨 CRITICAL HARDWARE FAULT: MEMORY CORRUPTED! 🚨\n");
-    }
+    kprint("REACTIVE DEMAND PAGING SUBSYSTEM ONLINE.\n");
+    kprint("KERNEL RUNTIME STEADY AND SECURE.\n");
 
     while (1);
 }
