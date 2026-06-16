@@ -30,4 +30,21 @@ timer_stub:
     popal
     iretl
 
+.global isr6_stub
+    isr6_stub:
+    pushal
+    call isr_handler
+    popal
+    iretl
+
+.global page_fault_stub
+.extern page_fault_handler
+
+page_fault_stub:
+    pushal
+    call page_fault_handler
+    popal
+    add $4, %esp
+    iretl
+
 .section .note.GNU-stack,"",@progbits

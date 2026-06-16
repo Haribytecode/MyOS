@@ -19,15 +19,22 @@ extern void idt_load(uint32_t);
 extern void isr_stub(void);
 extern void timer_stub(void);
 extern void keyboard_stub(void);
+extern void page_fault_stub(void);
+extern void page_fault_handler();
 
+extern void isr6_stub(void);
 void idt_init(void){
     idtp.limit = sizeof(idt)-1;
     idtp.base = (uint32_t)&idt;
 
-    for(int i=0;i<256;i++) idt_set_gate(i,(uint32_t)isr_stub);
+    for(int i=0;i<256;i++) 
+        idt_set_gate(i,(uint32_t)isr_stub);
+    idt_set_gate(6, (uint32_t)isr6_stub);
 
     idt_set_gate(32,(uint32_t)timer_stub);
     idt_set_gate(33,(uint32_t)keyboard_stub);
+
+    idt_set_gate(14, (uint32_t)page_fault_stub);
 
     idt_load((uint32_t)&idtp);
 }
