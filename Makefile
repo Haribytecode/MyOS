@@ -1,7 +1,7 @@
 CC = gcc
 LD = ld
 
-CFLAGS = -m32 -std=gnu11 -O2 -ffreestanding -fno-builtin -Wall -Wextra -nostdlib
+CFLAGS = -m32 -std=gnu11 -O2 -ffreestanding -fno-builtin -Wall -Wextra -nostdlib -fno-asynchronous-unwind-tables -fno-unwind-tables -fno-stack-protector
 LDFLAGS = -m elf_i386 -T linker.ld
 
 

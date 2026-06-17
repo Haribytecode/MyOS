@@ -7,6 +7,7 @@ uint8_t frame_bitmap[MAX_FRAMES];
 uint32_t page_directory[1024] __attribute__((aligned(4096)));
 uint32_t first_page_table[1024] __attribute__((aligned(4096)));
 uint32_t second_page_table[1024] __attribute__((aligned(4096)));
+uint32_t kernel_page_table[1024] __attribute__((aligned(4096)));
 void paging_init() {
 
     // ❌ DO NOT use 0x2
@@ -24,6 +25,8 @@ void paging_init() {
 
     page_directory[0] = ((uint32_t)first_page_table) | 3;
     page_directory[1] = ((uint32_t)second_page_table) | 3;
+    page_directory[768] = ((uint32_t)first_page_table) | 3;
+    page_directory[769] = ((uint32_t)second_page_table) | 3;
 
     for(int i=0;i<MAX_FRAMES;i++){
         frame_bitmap[i]=0;

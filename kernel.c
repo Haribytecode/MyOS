@@ -44,14 +44,8 @@ void kernel_main(void)
     pic_init();
 
     vga_clear();
-    kprint("HARIHARAN-OS CORE BOOTING...\n");
 
-    // Initialize Virtual Memory Management Subsystem
-    paging_init();
-    paging_enable();
-
-    kprint("REACTIVE DEMAND PAGING SUBSYSTEM ONLINE.\n");
-    kprint("KERNEL RUNTIME STEADY AND SECURE.\n");
+    kprint("HIGHER HALF KERNEL ONLINE!\n");
 
     while (1);
 }
