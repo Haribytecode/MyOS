@@ -1,32 +1,132 @@
+.extern kernel_main
+.extern page_directory
+.extern first_page_table
+.extern second_page_table
+.extern __phys_page_directory
+.extern __phys_first_pt
+.extern __phys_second_pt
+.extern __phys_kernel_pt
+.extern _bootstrap_end
+
+.set KERNEL_BASE, 0xC0000000
 .set MAGIC,    0x1BADB002
 .set FLAGS,    3
 .set CHECKSUM, -(MAGIC + FLAGS)
 
-.section .multiboot
+.section .multiboot, "a"
 .align 4
 .long MAGIC
 .long FLAGS
 .long CHECKSUM
 
-.section .bss
+.section .bootstrap,"ax"
 .align 16
-stack_bottom:
-    .skip 16384 # 16 KB
-stack_top:
+bootstrap_stack_bottom:
+    .skip 16384
+bootstrap_stack_top:
 
-.section .text
+.section .bootstrap,"ax"
 .global _start
 _start:
-    # Set up the low-memory execution stack pointer
-    mov $stack_top, %esp
-    
-    # Branch into your high-level C code configuration
-    call kernel_main
-    
+    # Set up our secure low stack space
+    mov $bootstrap_stack_top, %esp
     cli
-halt_loop:
-    hlt
-    jmp halt_loop
 
+    /* 1. Clear Page Directory cleanly BEFORE linking anything */
+    mov $__phys_page_directory, %edi    
+    xor %eax, %eax
+    mov $1024, %ecx
+    rep stosl
+
+    /* 2. first_page_table = True Identity Map 0MB - 4MB (Trampoline Safe Space) */
+    mov $__phys_first_pt, %edi
+    xor %ebx, %ebx              # Start at absolute physical 0x0
+    mov $1024, %ecx
+fill_first_pt:
+    mov %ebx, %eax
+    or $3, %eax                 # Present + Writable (0x3)
+    mov %eax, (%edi)
+    add $4096, %ebx
+    add $4, %edi
+    loop fill_first_pt
+
+    /* 3. second_page_table = True Identity Map 4MB - 8MB */
+    mov $__phys_second_pt, %edi        
+    mov $0x400000, %ebx         # Start at physical 4MB
+    mov $1024, %ecx
+fill_second_pt:
+    mov %ebx, %eax
+    or $3, %eax
+    mov %eax, (%edi)
+    add $4096, %ebx
+    add $4, %edi
+    loop fill_second_pt
+
+    /* 4. kernel_page_table = Shifted Map starting exactly at _bootstrap_end */
+    mov $__phys_kernel_pt, %edi
+    add $1024, %edi          # skip first 256 PTEs
+
+    mov $_bootstrap_end, %ebx
+    mov $768, %ecx           # fill entries 256..1023
+fill_kernel_pt:
+    mov %ebx, %eax
+    or $3, %eax
+    mov %eax, (%edi)
+    add $4096, %ebx
+    add $4, %edi
+    loop fill_kernel_pt
+
+    /* 5. Link Tables Safely Into Page Directory Entries */
+    mov $__phys_page_directory, %edi
+
+    /* PDE[0] -> Points to True Identity Map Table 1 (0-4MB Trampoline Guard) */
+    mov $__phys_first_pt, %eax    
+    or $3, %eax
+    mov %eax, 0(%edi)
+
+    /* PDE[1] -> Points to True Identity Map Table 2 (4-8MB) */
+    mov $__phys_second_pt, %eax    
+    or $3, %eax
+    mov %eax, 4(%edi)
+
+    /* PDE[768] -> Points to Shifted Kernel Page Table (0xC0000000 mark!) */
+    mov $__phys_kernel_pt, %eax
+    or $3, %eax
+    mov %eax, 3072(%edi)
+
+    /* PDE[769] -> Points to True Identity Map Table 2 (0xC0400000 mark!) */
+    mov $__phys_second_pt, %eax
+    or $3, %eax
+    mov %eax, 3076(%edi)
+
+    /* Recursive Mapping Window at index 1023 (0xFFC00000) */
+    mov $__phys_page_directory, %eax 
+    or $3, %eax
+    mov %eax, 4092(%edi)
+
+    /* 6. Load Page Directory Pointer into CR3 */
+    mov $__phys_page_directory, %eax
+    mov %eax, %cr3
+
+    /* 7. Turn on Paging Hardware! */
+    mov %cr0, %eax
+    or $0x80000000, %eax
+    mov %eax, %cr0
+
+    /* 8. 🚀 THE NATIVE ABSOLUTE FAR JUMP: Flushes the lookahead pipelines cleanly! */
+    mov $0xC0100000, %eax
+    jmp *%eax
+
+.section .text
+.global higher_half_entry
+higher_half_entry:
+    cli
+    
+    # Call your C kernel main loop execution thread natively up at 3GB
+    mov $0, %ebp
+    call kernel_main
+
+hang:
+    jmp hang
 
 .section .note.GNU-stack,"",@progbits
