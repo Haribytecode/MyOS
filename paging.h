@@ -11,6 +11,8 @@ extern uint32_t page_directory[PAGE_ENTRIES];
 extern uint32_t first_page_table[PAGE_ENTRIES];
 extern uint32_t second_page_table[PAGE_ENTRIES];  //added now  for second page table for day 36
 extern uint32_t next_free_frame;
+uint32_t alloc_frame(void);
+void free_frame(uint32_t phys);
 
 
 void paging_init();
