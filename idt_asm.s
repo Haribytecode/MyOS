@@ -1,8 +1,8 @@
 .code32
 .global idt_load
+.global timer_stub
 .global keyboard_stub
 .global isr_stub
-.global timer_stub
 .extern keyboard_handler
 .extern isr_handler
 .extern timer_handler
@@ -29,6 +29,8 @@ timer_stub:
     call timer_handler
     popal
     iretl
+
+
 
 .global isr6_stub
     isr6_stub:

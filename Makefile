@@ -5,7 +5,7 @@ CFLAGS = -m32 -std=gnu11 -O2 -ffreestanding -fno-builtin -Wall -Wextra -nostdlib
 LDFLAGS = -m elf_i386 -T linker.ld
 
 
-OBJS = boot.o idt_asm.o kernel.o gdt.o gdt_flush.o idt.o isr.o panic.o pic.o keyboard.o uart.o task.o process.o sync.o paging.o heap.o
+OBJS = boot.o idt_asm.o kernel.o gdt.o gdt_flush.o idt.o isr.o panic.o pic.o keyboard.o uart.o paging.o heap.o scheduler.o switch_task.o timer.o 
 
 all: kernel.elf
 

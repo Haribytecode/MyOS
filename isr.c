@@ -4,13 +4,14 @@
 #include "uart.h"
 #include "paging.h"
 
-extern void timer_handler(void);
 extern void kprint(const char* str);
 extern uint32_t alloc_frame(void);
 extern void map_page(uint32_t virt, uint32_t phys);
 
-void isr_handler(void) {
-     while(1);
+void isr_handler(void)
+{
+    kprint("ISR\n");
+    while (1);
 }
 
 void page_fault_handler(void)
