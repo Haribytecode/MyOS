@@ -20,7 +20,7 @@ typedef struct task
     uint32_t esp;
     uint32_t ebp;
     uint32_t eip;
-
+    uint32_t eflags;
     uint32_t cr3;
     uint32_t kernel_stack_top;
     task_state_t state;
@@ -30,7 +30,7 @@ typedef struct task
 
 void scheduler_init(void);
 void schedule(void);
-
+void scheduler_save_context(void);
 task_t *scheduler_current(void);
 task_t *scheduler_create_task(void);
 #endif

@@ -55,7 +55,20 @@ task_t *scheduler_current(void)
     return current_task;
 }
 
+void scheduler_save_context(void)
+{
+    asm volatile("mov %%esp, %0" : "=r"(current_task->esp));
+    asm volatile("mov %%ebp, %0" : "=r"(current_task->ebp));
+
+    asm volatile(
+        "pushf\n\t"
+        "pop %0"
+        : "=r"(current_task->eflags));
+
+    current_task->eip = 0;
+}
+
 void schedule(void)
 {
-    return;
+    scheduler_save_context();
 }
