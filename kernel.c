@@ -45,6 +45,17 @@ void kernel_main(void)
 
     scheduler_init();
     kprint("[OK] SCHEDULER INITIALIZED.\n");
+    task_t *t1 = scheduler_create_task();
+task_t *t2 = scheduler_create_task();
+
+if (t1 && t2)
+{
+    kprint("[OK] TASK CREATION PASSED.\n");
+}
+else
+{
+    kprint("[FAIL] TASK CREATION FAILED.\n");
+}
 
     kprint("====================================================\n");
     kprint("SYSTEM STATUS: RUNNING AND IDLE. AWAITING INTERRUPTS...\n");
