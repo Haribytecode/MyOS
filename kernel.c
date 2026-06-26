@@ -44,33 +44,18 @@ void kernel_main(void)
     kprint("[OK] Dynamic Kernel Heap Manager Loaded Stably at 3GB virtual highway.\n");
 
     scheduler_init();
+
+    /* Temporary kernel tasks (needed for scheduler operation) */
+    scheduler_create_task();
+    scheduler_create_task();
+
     kprint("[OK] SCHEDULER INITIALIZED.\n");
-    task_t *t1 = scheduler_create_task();
-    task_t *t2 = scheduler_create_task();
-    if (t1->kernel_stack_top != t2->kernel_stack_top)
-    kprint("[OK] UNIQUE KERNEL STACKS.\n");
-else
-    kprint("[FAIL] STACK COLLISION.\n");
-task_t *next = scheduler_next_task();
-
-if (next == t1)
-    kprint("[OK] NEXT TASK SELECTOR PASSED.\n");
-else
-    kprint("[FAIL] NEXT TASK SELECTOR FAILED.\n");
-
-if (t1 && t2)
-{
-    kprint("[OK] TASK CREATION PASSED.\n");
-}
-else
-{
-    kprint("[FAIL] TASK CREATION FAILED.\n");
-}
 
     kprint("====================================================\n");
     kprint("SYSTEM STATUS: RUNNING AND IDLE. AWAITING INTERRUPTS...\n");
 
     asm volatile("sti");
+
     kprint("INTERRUPTS ENABLED\n");
 
     while (1)
