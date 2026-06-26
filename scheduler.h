@@ -31,6 +31,7 @@ typedef struct task
 void scheduler_init(void);
 void schedule(void);
 void scheduler_save_context(void);
+task_t *scheduler_next_task(void);
 task_t *scheduler_current(void);
 task_t *scheduler_create_task(void);
 #endif

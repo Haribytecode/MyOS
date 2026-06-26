@@ -51,6 +51,12 @@ void kernel_main(void)
     kprint("[OK] UNIQUE KERNEL STACKS.\n");
 else
     kprint("[FAIL] STACK COLLISION.\n");
+task_t *next = scheduler_next_task();
+
+if (next == t1)
+    kprint("[OK] NEXT TASK SELECTOR PASSED.\n");
+else
+    kprint("[FAIL] NEXT TASK SELECTOR FAILED.\n");
 
 if (t1 && t2)
 {
