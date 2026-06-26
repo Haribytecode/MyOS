@@ -32,5 +32,5 @@ void scheduler_init(void);
 void schedule(void);
 
 task_t *scheduler_current(void);
-
+task_t *scheduler_create_task(void);
 #endif
