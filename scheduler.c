@@ -5,7 +5,9 @@ static task_t task_table[MAX_TASKS];
 static task_t *current_task = 0;
 
 static uint32_t next_pid = 1;
+#define KERNEL_STACK_SIZE 4096
 
+static uint8_t kernel_stacks[MAX_TASKS][KERNEL_STACK_SIZE];
 void scheduler_init(void)
 {
     for (uint32_t i = 0; i < MAX_TASKS; i++)
@@ -17,6 +19,8 @@ void scheduler_init(void)
         task_table[i].cr3 = 0;
         task_table[i].state = TASK_UNUSED;
         task_table[i].next = 0;
+        task_table[i].kernel_stack_top =
+    (uint32_t)&kernel_stacks[i][KERNEL_STACK_SIZE];
     }
 
     current_task = &task_table[0];
@@ -33,8 +37,8 @@ task_t *scheduler_create_task(void)
         {
             task_table[i].pid = next_pid++;
             task_table[i].state = TASK_READY;
-            task_table[i].esp = 0;
-            task_table[i].ebp = 0;
+            task_table[i].esp = task_table[i].kernel_stack_top;
+            task_table[i].ebp = task_table[i].kernel_stack_top;
             task_table[i].eip = 0;
             task_table[i].cr3 = 0;
             task_table[i].next = 0;

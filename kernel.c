@@ -46,7 +46,11 @@ void kernel_main(void)
     scheduler_init();
     kprint("[OK] SCHEDULER INITIALIZED.\n");
     task_t *t1 = scheduler_create_task();
-task_t *t2 = scheduler_create_task();
+    task_t *t2 = scheduler_create_task();
+    if (t1->kernel_stack_top != t2->kernel_stack_top)
+    kprint("[OK] UNIQUE KERNEL STACKS.\n");
+else
+    kprint("[FAIL] STACK COLLISION.\n");
 
 if (t1 && t2)
 {
