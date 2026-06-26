@@ -50,10 +50,6 @@ task_t *scheduler_create_task(void)
     return 0;
 }
 
-task_t *scheduler_current(void)
-{
-    return current_task;
-}
 
 void scheduler_save_context(void)
 {
@@ -68,7 +64,34 @@ void scheduler_save_context(void)
     current_task->eip = 0;
 }
 
+
+task_t *scheduler_current(void)
+{
+    return current_task;
+}
+
+task_t *scheduler_next_task(void)
+{
+    uint32_t start = current_task->pid;
+
+    for (uint32_t i = 1; i < MAX_TASKS; i++)
+    {
+        uint32_t index = (start + i) % MAX_TASKS;
+
+        if (task_table[index].state == TASK_READY)
+        {
+            return &task_table[index];
+        }
+    }
+
+    return current_task;
+}
+
 void schedule(void)
 {
     scheduler_save_context();
+
+    task_t *next = scheduler_next_task();
+
+    (void)next;
 }
