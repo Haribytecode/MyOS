@@ -1,6 +1,8 @@
 #ifndef TIMER_H
 #define TIMER_H
 
-void timer_handler(void);
+#include <stdint.h>
+
+uint32_t *timer_handler(uint32_t *esp);
 
 #endif

@@ -22,6 +22,7 @@ typedef struct task
     uint32_t eip;
     uint32_t eflags;
     uint32_t cr3;
+    uint32_t slot;
     uint32_t kernel_stack_top;
     task_state_t state;
 

@@ -24,12 +24,21 @@ isr_stub:
     popal
     iretl
 
-timer_stub:
-    pushal
-    call timer_handler
-    popal
-    iretl
+.global timer_stub
+.extern timer_handler
 
+timer_stub:
+    pusha
+
+    mov %esp, %eax
+    push %eax
+
+    call timer_handler
+
+    add $4, %esp
+
+    popa
+    iret
 
 
 .global isr6_stub

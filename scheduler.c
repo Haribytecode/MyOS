@@ -3,7 +3,7 @@
 static task_t task_table[MAX_TASKS];
 
 static task_t *current_task = 0;
-
+extern void kprint(const char* str);
 static uint32_t next_pid = 1;
 #define KERNEL_STACK_SIZE 4096
 
@@ -11,7 +11,8 @@ static uint8_t kernel_stacks[MAX_TASKS][KERNEL_STACK_SIZE];
 void scheduler_init(void)
 {
     for (uint32_t i = 0; i < MAX_TASKS; i++)
-    {
+    {   
+        task_table[i].slot = i;
         task_table[i].pid = 0;
         task_table[i].esp = 0;
         task_table[i].ebp = 0;
@@ -72,8 +73,7 @@ task_t *scheduler_current(void)
 
 task_t *scheduler_next_task(void)
 {
-    uint32_t start = current_task->pid;
-
+    uint32_t start = current_task->slot;
     for (uint32_t i = 1; i < MAX_TASKS; i++)
     {
         uint32_t index = (start + i) % MAX_TASKS;
@@ -93,5 +93,10 @@ void schedule(void)
 
     task_t *next = scheduler_next_task();
 
-    (void)next;
+    if (next != current_task)
+    {
+        current_task->state = TASK_READY;
+        next->state = TASK_RUNNING;
+        current_task = next;
+    }
 }
