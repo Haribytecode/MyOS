@@ -1,6 +1,5 @@
 #include <stdint.h>
 #include "uart.h"
-#include "sync.h"
 
 
 #define PORT 0x3F8
@@ -39,8 +38,3 @@ void uart_puthex(uint32_t v) {
 }
 
 
-void safe_uart_puts(const char *s) {
-    enter_critical();
-    uart_puts(s);
-    exit_critical();
-}
