@@ -3,6 +3,12 @@
 
 #include <stdint.h>
 
+/*
+ * Saved CPU context.
+ * This structure is ONLY used by context_switch().
+ * It is NOT the interrupt frame.
+ */
+
 typedef struct context
 {
     uint32_t edi;
@@ -17,7 +23,5 @@ typedef struct context
     uint32_t eip;
 
 } context_t;
-
-void switch_context(context_t **old, context_t *new);
 
 #endif
