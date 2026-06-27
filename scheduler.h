@@ -30,7 +30,8 @@ typedef struct task
     uint32_t eip;
     uint32_t cs;
     uint32_t eflags;
-
+    uint32_t user_esp;
+    uint32_t user_ss;
     uint32_t cr3;
 
     uint32_t kernel_stack_top;
