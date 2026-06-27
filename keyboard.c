@@ -1,11 +1,9 @@
 #include "uart.h"
 #include <stdint.h>
-
+#include "console.h"
 #define VGA_ADDRESS 0xB8000
 #define VGA_WIDTH 80
 #define VGA_HEIGHT 25
-
-int vga_pos = 0;
 
 static inline uint8_t inb(uint16_t port) {
     uint8_t ret;
@@ -17,28 +15,8 @@ static inline void outb(uint16_t port, uint8_t val) {
     __asm__ volatile("outb %0, %1" : : "a"(val), "Nd"(port));
 }
 
-void vga_clear() {
-    volatile uint16_t* buffer = (volatile uint16_t*)VGA_ADDRESS;
-    for (int i = 0; i < VGA_WIDTH * VGA_HEIGHT; i++) {
-        buffer[i] = (uint16_t)' ' | (uint16_t)0x07 << 8;
-    }
-    vga_pos = 0;
-}
 
-void vga_putc(char c) {
-    volatile uint16_t* buffer = (volatile uint16_t*)VGA_ADDRESS;
-    if (c == '\n') {
-        vga_pos += VGA_WIDTH - (vga_pos % VGA_WIDTH);
-    } else if (c == '\b') {
-        if (vga_pos > 0) {
-            vga_pos--;
-            buffer[vga_pos] = (uint16_t)' ' | (uint16_t)0x0A << 8;
-        }
-    } else {
-        buffer[vga_pos++] = (uint16_t)c | (uint16_t)0x0A << 8;
-    }
 
-}
 
 
 
@@ -52,24 +30,7 @@ int bcd_to_bin(uint8_t bcd) {
     return ((bcd >> 4) * 10) + (bcd & 0x0F);
 }
 
-void kprint(const char* str) {
-    uart_puts(str);
-    for (int i = 0; str[i] != '\0'; i++) vga_putc(str[i]);
-}
 
-void kprint_dec(int n) {
-    if (n == 0) { kprint("0"); return; }
-    char buf[12];
-    int i = 0;
-    while (n > 0) {
-        buf[i++] = (n % 10) + '0';
-        n /= 10;
-    }
-    while (--i >= 0) {
-        char s[2] = {buf[i], '\0'};
-        kprint(s);
-    }
-}
 
 
 unsigned char kbd_map[128] = {
@@ -131,6 +92,9 @@ void run_shell_command(char *buf) {
 
 void keyboard_handler(void) {
     uint8_t sc = inb(0x60);
+    kprint("SC=");
+    kprint_dec(sc);
+    kprint("\n");
     if (!(sc & 0x80)) {
         char c = kbd_map[sc];
         if (c == '\n') {

@@ -1,10 +1,10 @@
 #include "heap.h"
 #include "paging.h"
+#include "console.h"
 #define KHEAP_START 0xD0000000
 #define PAGE_SIZE 4096
 static uint32_t heap_next=KHEAP_START;
 static heap_block_t *heap_head=0;
-extern void kprint(const char* str);
 void heap_init(void){
     heap_next=KHEAP_START; ///this heap_init is for telling the bootloader i.e during boot the heap_next is initiated always with starting address of the kernel heap address kheap!!
     heap_head=0;

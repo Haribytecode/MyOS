@@ -1,11 +1,11 @@
 CC = gcc
 LD = ld
 
-CFLAGS = -m32 -std=gnu11 -O2 -ffreestanding -fno-builtin -Wall -Wextra -nostdlib -fno-asynchronous-unwind-tables -fno-unwind-tables -fno-stack-protector
+CFLAGS = -m32 -std=gnu11 -O0 -g -ffreestanding -fno-builtin -Wall -Wextra -nostdlib -fno-asynchronous-unwind-tables -fno-unwind-tables -fno-stack-protector
 LDFLAGS = -m elf_i386 -T linker.ld
 
 
-OBJS = boot.o idt_asm.o kernel.o gdt.o gdt_flush.o idt.o isr.o panic.o pic.o keyboard.o uart.o paging.o heap.o scheduler.o switch_task.o timer.o 
+OBJS = boot.o idt_asm.o kernel.o gdt.o gdt_flush.o idt.o isr.o panic.o pic.o keyboard.o uart.o paging.o heap.o scheduler.o timer.o task.o console.o 
 
 all: kernel.elf
 

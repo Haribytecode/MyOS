@@ -31,7 +31,7 @@ void idt_init(void){
     idt_set_gate(6, (uint32_t)isr6_stub);
 
     idt_set_gate(32,(uint32_t)timer_stub);
-    idt_set_gate(33,(uint32_t)keyboard_stub);
+   // idt_set_gate(33,(uint32_t)keyboard_stub);
 
     idt_set_gate(14, (uint32_t)page_fault_stub);
 

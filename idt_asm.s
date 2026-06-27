@@ -37,9 +37,10 @@ timer_stub:
 
     add $4, %esp
 
+    mov %eax, %esp
+
     popa
     iret
-
 
 .global isr6_stub
     isr6_stub:

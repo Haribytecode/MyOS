@@ -3,8 +3,7 @@
 #include <stdint.h>
 #include "uart.h"
 #include "paging.h"
-
-extern void kprint(const char* str);
+#include "console.h"
 extern uint32_t alloc_frame(void);
 extern void map_page(uint32_t virt, uint32_t phys);
 

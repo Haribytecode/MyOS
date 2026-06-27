@@ -114,9 +114,8 @@ fill_kernel_pt:
     mov %eax, %cr0
 
     /* 8. 🚀 THE NATIVE ABSOLUTE FAR JUMP: Flushes the lookahead pipelines cleanly! */
-    mov $0xC0100000, %eax
+    mov $higher_half_entry, %eax
     jmp *%eax
-
 .section .text
 .global higher_half_entry
 higher_half_entry:

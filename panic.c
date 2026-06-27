@@ -1,4 +1,5 @@
 #include "panic.h"
+#include "console.h"
 extern void uart_puts(const char *);
 void panic(const char *msg){
     uart_puts("KERNEL PANIC\n");
