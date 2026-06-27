@@ -9,7 +9,7 @@ static inline void outb(uint16_t port, uint8_t val)
 
 interrupt_frame_t *timer_handler(interrupt_frame_t *frame)
 {
-    kprint("IRQ\n");
+    //kprint("IRQ\n");
     outb(0x20, 0x20);   // Send EOI
 
     return frame;       // No scheduling yet
