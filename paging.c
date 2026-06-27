@@ -1,6 +1,5 @@
 #include "paging.h"
-
-extern void kprint(const char* str);
+#include "console.h"
 #define MAX_FRAMES 1024
 uint8_t frame_bitmap[MAX_FRAMES];
 

@@ -1,25 +1,27 @@
 #include <stdint.h>
 #include "uart.h"
-
-
+#include "io.h"
+#include "console.h"
 #define PORT 0x3F8
 
 
-static inline void outb(uint16_t port, uint8_t val) {
-    __asm__ volatile("outb %0, %1" : : "a"(val), "Nd"(port));
-}
 
-void uart_init() {
-    outb(PORT + 1, 0x00);    
-    outb(PORT + 3, 0x80);    
-    outb(PORT + 0, 0x03);    
-    outb(PORT + 1, 0x00);   
-    outb(PORT + 3, 0x03);    
-    outb(PORT + 2, 0xC7);    
-}
 
-void uart_putc(char c) {
- 
+void uart_init(void)
+{
+    outb(PORT + 1, 0x00);    // Disable interrupts
+    outb(PORT + 3, 0x80);    // Enable DLAB
+    outb(PORT + 0, 0x03);    // Divisor low byte (38400 baud)
+    outb(PORT + 1, 0x00);    // Divisor high byte
+    outb(PORT + 3, 0x03);    // 8 bits, no parity, 1 stop bit
+    outb(PORT + 2, 0xC7);    // Enable FIFO
+    outb(PORT + 4, 0x0B);    // <-- THIS LINE
+}
+void uart_putc(char c)
+{
+    while ((inb(PORT + 5) & 0x20) == 0)
+        ;
+
     outb(PORT, c);
 }
 
