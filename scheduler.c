@@ -66,6 +66,10 @@ task_t *scheduler_create_task(void)
             *--stack = 0; /* EDI */
 
             task_table[i].esp = (uint32_t)stack;
+            kprint("TASK ESP = ");
+            kprint_dec(task_table[i].esp);
+            kprint("\n");
+            kprint("TASK CREATED\n");         
             task_table[i].ebp = (uint32_t)stack;
             task_table[i].eip = (uint32_t)task_entry;
             task_table[i].cr3 = 0;
@@ -112,12 +116,5 @@ uint32_t *schedule(uint32_t *esp)
 
     task_t *next = scheduler_next_task();
 
-    if (next != current_task)
-    {
-        current_task->state = TASK_READY;
-        next->state = TASK_RUNNING;
-        current_task = next;
-    }
-
-    return (uint32_t *)current_task->esp;
+    return (uint32_t *)next->esp;
 }

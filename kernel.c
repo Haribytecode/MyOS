@@ -27,10 +27,25 @@ static inline void vga_set_cursor(int row, int col)
    ======================================================================== */
 void kernel_main(void)
 {
-    gdt_init();
-    idt_init();
-    pic_init();
+  gdt_init();
+kprint("A\n");
 
-    while (1)
-        ;
+idt_init();
+kprint("B\n");
+
+scheduler_init();
+kprint("C\n");
+
+scheduler_create_task();
+kprint("D\n");
+
+scheduler_create_task();
+kprint("E\n");
+
+pic_init();
+asm volatile("sti");
+kprint("F\n");
+
+while (1)
+    ;
 }

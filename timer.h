@@ -1,8 +1,8 @@
 #ifndef TIMER_H
 #define TIMER_H
 
-#include <stdint.h>
+#include "interrupt.h"
 
-uint32_t *timer_handler(uint32_t *esp);
+interrupt_frame_t *timer_handler(interrupt_frame_t *frame);
 
 #endif
