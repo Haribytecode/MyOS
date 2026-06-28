@@ -54,9 +54,27 @@ timer_stub:
 
 page_fault_stub:
     pushal
+
+    mov 32(%esp), %eax
+    push %eax
+
     call page_fault_handler
-    popal
+
     add $4, %esp
+    popal
+
+    add $4, %esp      # remove CPU error code
     iretl
 
+.global syscall_stub
+.extern syscall_handler
+
+syscall_stub:
+    pusha
+
+    call syscall_handler
+
+    popa
+    iretl
+    
 .section .note.GNU-stack,"",@progbits

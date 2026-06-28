@@ -12,35 +12,20 @@ void isr_handler(void)
     kprint("ISR\n");
     while (1);
 }
-
-void page_fault_handler(void)
+void page_fault_handler(uint32_t error)
 {
-    uint32_t fault_addr;
-    
-    // 1. Capture the exact exploding address from the CR2 register [Swarthmore College]
-    asm volatile("mov %%cr2, %0" : "=r"(fault_addr));
+    uint32_t cr2;
+    asm volatile("mov %%cr2, %0" : "=r"(cr2));
 
-    kprint("🚨 HARDWARE PAGE FAULT TRAPPED AT VIRTUAL: ");
-    
-    // Dynamic text-mode hex rendering routine
-    char hex[] = "0123456789ABCDEF";
-    for (int i = 28; i >= 0; i -= 4) {
-        char c = hex[(fault_addr >> i) & 0xF];
-        char str[2] = {c, '\0'};
-        kprint(str);
-    }
-    kprint("\n");
+    uart_puts("PAGE FAULT\n");
+    uart_puts("CR2 = ");
+    uart_puthex(cr2);
+    uart_puts("\n");
 
-    // 2. Request an isolated physical frame block [Swarthmore College, OSDev]
-    uint32_t frame = alloc_frame();
-    if(frame == 0){
-        kprint("KERNEL PANIC: OUT OF PHYSICAL MEMORY!\n");
-        while(1);
-    }
-    
-    // 3. Heal the page tables in real-time [Swarthmore College, OSDev]
-    map_page(fault_addr, frame);
-    
-    kprint("🔧 DEMAND PAGING ENGINE SUCCESSFULLY REPAIRED AND ROUTED PATHWAY!\n");
-    return;
+    uart_puts("ERR = ");
+    uart_puthex(error);
+    uart_puts("\n");
+
+    while (1)
+        asm volatile("cli; hlt");
 }

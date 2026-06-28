@@ -39,8 +39,10 @@ typedef struct
 
     uint32_t ldt;
 
-    uint16_t trap;
-    uint16_t iomap_base;
+    // FIX: Enforce standard packing directly on the variables 
+    // to stop the compiler from generating structural padding bytes
+    uint16_t trap __attribute__((packed));
+    uint16_t iomap_base __attribute__((packed));
 
 } __attribute__((packed)) tss_t;
 
