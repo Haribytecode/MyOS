@@ -85,3 +85,16 @@ void kprint_dec(uint32_t value)
     while (i--)
         vga_putc(buffer[i]), uart_putc(buffer[i]);
 }
+
+void kprint_hex(uint32_t value)
+{
+    char hex_digits[] = "0123456789ABCDEF";
+    
+    // Dynamic text-mode hex rendering routine
+    for (int i = 28; i >= 0; i -= 4) 
+    {
+        char c = hex_digits[(value >> i) & 0xF];
+        char str[2] = {c, '\0'};
+        kprint(str);
+    }
+}

@@ -1,51 +1,52 @@
 #include <stdint.h>
-#include "io.h"
+#include "console.h"
 #include "gdt.h"
 #include "idt.h"
-#include "pic.h"
-#include "uart.h"
-#include "paging.h"
-#include "heap.h"
-#include "scheduler.h"
-#include "timer.h"
-#include "console.h"
 #include "tss.h"
-extern void vga_clear(void);
-extern void vga_putc(char c);
-extern int vga_pos;
-static int in_irq = 0;
+#include "uart.h"
 
-static inline void vga_set_cursor(int row, int col)
-{
-    vga_pos = row * 80 + col;
-}
+extern void tss_flush(void);
+extern void enter_user_mode_v2(void);
 
-
-/* ================= PRODUCTION KERNEL ENTRY ================= */
-/* ========================================================================
-   🚀 HARIHARAN-OS MAIN PRODUCTION KERNEL ENTRY POINT
-   ======================================================================== */
 void kernel_main(void)
 {
-  gdt_init();
-kprint("A\n");
+    gdt_init();
+    tss_init();
 
-idt_init();
-kprint("B\n");
+   static uint8_t kernel_stack[4096] __attribute__((aligned(16)));
+    tss.esp0 = (uint32_t)&kernel_stack[4096];
 
-scheduler_init();
-kprint("C\n");
+    tss.ss0 = 0x10;
+    tss.iomap_base = sizeof(tss_t);
 
-scheduler_create_task();
-kprint("D\n");
+    tss_flush();
+    idt_init();
 
-scheduler_create_task();
-kprint("E\n");
+    kprint("Dropping to safe Ring 3 baseline...\n");
 
-pic_init();
-asm volatile("sti");
-kprint("F\n");
+    // Mask hardware interrupts completely to block background interferences
+    asm volatile("cli");
 
-while (1)
-    ;
+    uint32_t target_eip = 0x00200000;
+    uint32_t target_esp = 0x00201000;
+
+    uint8_t *user_code_dest = (uint8_t *)target_eip;
+
+    user_code_dest[0] = 0xCD;   // int
+    user_code_dest[1] = 0x80;
+    user_code_dest[2] = 0xEB;   // jmp $
+    user_code_dest[3] = 0xFE;
+    // FIX: Force target variables straight into hardware registers EAX and EDX.
+    // This removes stack references and executes the privilege drop cleanly!
+    asm volatile (
+        "movl %0, %%eax\n\t"  // Force target_eip into EAX register
+        "movl %1, %%edx\n\t"  // Force target_esp into EDX register
+        "call enter_user_mode_v2\n\t"
+        :
+        : "r"(target_eip), "r"(target_esp)
+        : "eax", "edx", "memory"
+    );
+
+    while (1)
+        ;
 }

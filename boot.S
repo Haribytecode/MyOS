@@ -7,6 +7,14 @@
 .extern __phys_second_pt
 .extern __phys_kernel_pt
 .extern _bootstrap_end
+.extern __phys_bss_start
+.extern __phys_bss_end
+
+/* Ensure these match your new linker.ld labels exactly */
+.extern _bss_start
+.extern _bss_end
+
+
 
 .set KERNEL_BASE, 0xC0000000
 .set MAGIC,    0x1BADB002
@@ -23,6 +31,7 @@
 .align 16
 bootstrap_stack_bottom:
     .skip 16384
+.global bootstrap_stack_top    
 bootstrap_stack_top:
 
 .section .bootstrap,"ax"
@@ -31,6 +40,14 @@ _start:
     # Set up our secure low stack space
     mov $bootstrap_stack_top, %esp
     cli
+    /* Clear .bss BEFORE building page tables */
+
+    mov $__phys_bss_start, %edi
+    mov $__phys_bss_end, %ecx
+    sub %edi, %ecx
+    shr $2, %ecx          # number of dwords
+    xor %eax, %eax
+    rep stosl
 
     /* 1. Clear Page Directory cleanly BEFORE linking anything */
     mov $__phys_page_directory, %edi    
@@ -38,13 +55,13 @@ _start:
     mov $1024, %ecx
     rep stosl
 
-    /* 2. first_page_table = True Identity Map 0MB - 4MB (Trampoline Safe Space) */
+       /* 2. first_page_table = True Identity Map 0MB - 4MB */
     mov $__phys_first_pt, %edi
-    xor %ebx, %ebx              # Start at absolute physical 0x0
+    xor %ebx, %ebx              
     mov $1024, %ecx
 fill_first_pt:
     mov %ebx, %eax
-    or $3, %eax                 # Present + Writable (0x3)
+    or $7, %eax                 # FIX: Present + Writable + User Mode (0x7)
     mov %eax, (%edi)
     add $4096, %ebx
     add $4, %edi
@@ -52,11 +69,11 @@ fill_first_pt:
 
     /* 3. second_page_table = True Identity Map 4MB - 8MB */
     mov $__phys_second_pt, %edi        
-    mov $0x400000, %ebx         # Start at physical 4MB
+    mov $0x400000, %ebx         
     mov $1024, %ecx
 fill_second_pt:
     mov %ebx, %eax
-    or $3, %eax
+    or $7, %eax                 # FIX: Present + Writable + User Mode (0x7)
     mov %eax, (%edi)
     add $4096, %ebx
     add $4, %edi
@@ -64,45 +81,47 @@ fill_second_pt:
 
     /* 4. kernel_page_table = Shifted Map starting exactly at _bootstrap_end */
     mov $__phys_kernel_pt, %edi
-    add $1024, %edi          # skip first 256 PTEs
+    add $1024, %edi          
 
     mov $_bootstrap_end, %ebx
-    mov $768, %ecx           # fill entries 256..1023
+    mov $768, %ecx           
 fill_kernel_pt:
     mov %ebx, %eax
-    or $3, %eax
+    or $3, %eax                 # FIX: Present + Writable + User Mode (0x3)
     mov %eax, (%edi)
     add $4096, %ebx
     add $4, %edi
     loop fill_kernel_pt
 
-    /* 5. Link Tables Safely Into Page Directory Entries */
+
+       /* 5. Link Tables Safely Into Page Directory Entries */
     mov $__phys_page_directory, %edi
 
     /* PDE[0] -> Points to True Identity Map Table 1 (0-4MB Trampoline Guard) */
     mov $__phys_first_pt, %eax    
-    or $3, %eax
+    or $7, %eax                 # CRITICAL FIX: Add User flag (0x04) to parent gate 0
     mov %eax, 0(%edi)
 
     /* PDE[1] -> Points to True Identity Map Table 2 (4-8MB) */
     mov $__phys_second_pt, %eax    
-    or $3, %eax
+    or $7, %eax                 # CRITICAL FIX: Add User flag (0x04) to parent gate 1
     mov %eax, 4(%edi)
 
     /* PDE[768] -> Points to Shifted Kernel Page Table (0xC0000000 mark!) */
     mov $__phys_kernel_pt, %eax
-    or $3, %eax
+    or $3, %eax                 # Present + Writable + User (0x3)
     mov %eax, 3072(%edi)
 
     /* PDE[769] -> Points to True Identity Map Table 2 (0xC0400000 mark!) */
     mov $__phys_second_pt, %eax
-    or $3, %eax
+    or $3, %eax                 # Present + Writable + User (0x3)
     mov %eax, 3076(%edi)
 
     /* Recursive Mapping Window at index 1023 (0xFFC00000) */
     mov $__phys_page_directory, %eax 
-    or $3, %eax
+    or $3, %eax                 # Present + Writable + User (0x3)
     mov %eax, 4092(%edi)
+
 
     /* 6. Load Page Directory Pointer into CR3 */
     mov $__phys_page_directory, %eax
@@ -116,14 +135,18 @@ fill_kernel_pt:
     /* 8. 🚀 THE NATIVE ABSOLUTE FAR JUMP: Flushes the lookahead pipelines cleanly! */
     mov $higher_half_entry, %eax
     jmp *%eax
+
 .section .text
 .global higher_half_entry
 higher_half_entry:
     cli
-    
-    # Call your C kernel main loop execution thread natively up at 3GB
+
+     
+   # Call your C kernel main loop execution thread natively up at 3GB
     mov $0, %ebp
     call kernel_main
+
+
 
 hang:
     jmp hang

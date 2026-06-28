@@ -8,5 +8,5 @@ void vga_putc(char c);
 
 void kprint(const char *str);
 void kprint_dec(uint32_t value);
-
+void kprint_hex(uint32_t value); 
 #endif

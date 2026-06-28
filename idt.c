@@ -20,8 +20,19 @@ extern void timer_stub(void);
 extern void keyboard_stub(void);
 extern void page_fault_stub(void);
 extern void page_fault_handler();
-
+extern void syscall_stub(void);
 extern void isr6_stub(void);
+static void idt_set_user_gate(uint8_t n, uint32_t handler)
+{
+    idt[n].offset_low  = handler & 0xFFFF;
+    idt[n].selector    = 0x08;
+    idt[n].zero        = 0;
+
+    // Present | 32-bit Interrupt Gate | DPL = 3
+    idt[n].type_attr   = 0xEE;
+
+    idt[n].offset_high = (handler >> 16) & 0xFFFF;
+}
 void idt_init(void){
     idtp.limit = sizeof(idt)-1;
     idtp.base = (uint32_t)&idt;
@@ -34,6 +45,7 @@ void idt_init(void){
    // idt_set_gate(33,(uint32_t)keyboard_stub);
 
     idt_set_gate(14, (uint32_t)page_fault_stub);
-
+    idt_set_user_gate(0x80, (uint32_t)syscall_stub);
     idt_load((uint32_t)&idtp);
+    
 }

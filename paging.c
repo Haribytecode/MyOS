@@ -1,5 +1,6 @@
 #include "paging.h"
 #include "console.h"
+#include <stdint.h>
 #define MAX_FRAMES 1024
 uint8_t frame_bitmap[MAX_FRAMES];
 
@@ -75,40 +76,67 @@ void paging_enable() {
      
         }
    
-void map_page(uint32_t virt,uint32_t phys){
-    uint32_t directory_index=(virt>>22) & 0x3FF;
-    uint32_t table_index=(virt>>12) & 0x3FF;
-    uint32_t *target_table_virt=(uint32_t *)(0XFFC00000+(directory_index*0x1000));
-        
-    if(page_directory[directory_index]==0){     
-                  // Here that means the page directory's entry does not have its page table created yet, so create new page table!
-        uint32_t phys_table=alloc_frame();
-        if(phys_table==0) {
-            kprint("KERNEL PANIC:OUT OF MEMORY!\n");
-            while(1);
-
-        }
-       
-
-        page_directory[directory_index]=phys_table | 3;
-        asm volatile("mov %%cr3, %%eax\n mov %%eax, %%cr3\n" ::: "eax");
-        for(int i=0;i<1024;i++){
-            target_table_virt[i]=0;
-        }
-
-
-
-    } 
-    target_table_virt[table_index]=phys | 3;
-      
-        
-
-    asm volatile(
-        "mov %%cr3, %%eax\n"
-        "mov %%eax, %%cr3\n "
-        :
-        :
-        :"eax"
-    );
+void map_page(uint32_t virt, uint32_t phys) {
+    uint32_t directory_index = (virt >> 22) & 0x3FF;
+    uint32_t table_index = (virt >> 12) & 0x3FF;
     
+    // Determine target flags based on address ownership
+    // If the virtual address is below 3GB (0xC0000000), apply the User flag (0x04)
+    uint32_t flags = 3; // Present (1) | Writable (2)
+    if (virt < 0xC0000000) {
+        flags |= 4; // Add User/Supervisor flag (4)
+    }
+
+    if (page_directory[directory_index] == 0) {     
+        uint32_t phys_table = alloc_frame();
+        if (phys_table == 0) {
+            kprint("KERNEL PANIC: OUT OF MEMORY!\n");
+            while(1);
+        }
+        // Securely apply our dynamically selected flag context to the directory entry
+        page_directory[directory_index] = phys_table | flags;
+    }
+
+    // Capture the target page table via the virtual mapping window
+    uint32_t *target_table_virt = (uint32_t *)(0xFFC00000 + (directory_index * 0x1000));
+    
+    // Set the individual page table entry with our matching flags
+    target_table_virt[table_index] = phys | flags;
+
+    // Critical: Flush the CPU's TLB cache for this specific address 
+    // to force the processor to reload the updated hardware privilege flags!
+    asm volatile("invlpg (%0)" : : "r"(virt) : "memory");
+}
+
+
+/* Master kernel page directory */
+// Master kernel page directory from your system
+extern uint32_t page_directory[PAGE_ENTRIES];
+extern uint32_t alloc_frame(void);
+void* phys_to_virt(uint32_t phys)
+{
+    // Add the higher-half kernel base offset to translate the raw physical frame
+    return (void*)(phys + KERNEL_BASE);
+}
+
+uint32_t* create_process_address_space(void)
+{
+    // 1. Allocate a physical frame for the new process directory
+    uint32_t pd_phys = alloc_frame();
+    if (pd_phys == 0) return 0;
+
+    // 2. Convert to a safe, writable virtual address pointer
+    uint32_t *pd = (uint32_t *)phys_to_virt(pd_phys);
+
+    // 3. Clear lower 3GB user space entries completely
+    for (int i = 0; i < 768; i++) {
+        pd[i] = 0;
+    }
+
+    // 4. Share upper 1GB kernel space entries identically from the master directory
+    for (int i = 768; i < PAGE_ENTRIES; i++) {
+        pd[i] = page_directory[i];
+    }
+
+    return pd;
 }
