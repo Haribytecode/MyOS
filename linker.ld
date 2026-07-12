@@ -29,13 +29,11 @@ SECTIONS
         *(.rodata*)
     }
 
-    .data : AT(LOADADDR(.rodata) + SIZEOF(.rodata))
+        .data : AT(LOADADDR(.rodata) + SIZEOF(.rodata))
     {
-    *(.data)
+        . = ALIGN(4096);          /* ← force page‑alignment */
+        *(.data)
     }
-
-    /* 4 KiB align virtual address */
-    . = ALIGN(4096);
 
     .bss : AT(ALIGN(LOADADDR(.data) + SIZEOF(.data), 4096))
     {
@@ -54,7 +52,7 @@ SECTIONS
     __phys_second_pt      = LOADADDR(.bss) + (second_page_table - ADDR(.bss));
     __phys_kernel_pt =
     LOADADDR(.bss) + (kernel_page_table - ADDR(.bss));
-    
+    __phys_scratch_pt = LOADADDR(.bss) + (scratch_page_table - ADDR(.bss));  
 
     /DISCARD/ :
     {

@@ -25,6 +25,12 @@ void page_fault_handler(uint32_t error)
     uart_puts("ERR = ");
     uart_puthex(error);
     uart_puts("\n");
+    uint32_t eip;
+    asm volatile("movl 4(%%ebp), %0" : "=r"(eip));
+    uart_puts("EIP = ");
+    uart_puthex(eip);
+    uart_puts("\n");
+
 
     while (1)
         asm volatile("cli; hlt");

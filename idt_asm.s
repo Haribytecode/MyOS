@@ -70,11 +70,15 @@ page_fault_stub:
 .extern syscall_handler
 
 syscall_stub:
+    cli                     # extra safety
     pusha
-
+    mov %esp, %eax
+    push %eax
     call syscall_handler
-
+    addl $4, %esp
+    mov %eax, %esp
     popa
+    sti                     # re-enable before iret
     iretl
     
 .section .note.GNU-stack,"",@progbits

@@ -1,6 +1,7 @@
 #include "console.h"
-
-void syscall_handler(void)
+#include "uart.h"
+uint32_t *syscall_handler(uint32_t *esp)
 {
-    kprint(">>> SYSCALL ENTERED <<<\n");
+    uart_puts(">>> SYSCALL FROM RING 3 <<<\n");
+    return esp;   // unchanged stack pointer
 }
