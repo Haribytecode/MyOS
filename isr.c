@@ -17,21 +17,19 @@ void page_fault_handler(uint32_t error)
     uint32_t cr2;
     asm volatile("mov %%cr2, %0" : "=r"(cr2));
 
+    if (!(error & 0x1) && (error & 0x4) && cr2 < 0xC0000000) {
+        uint32_t frame = alloc_frame();
+        if (frame) {
+            map_page(cr2, frame);
+            uint8_t *ptr = (uint8_t *)cr2;
+            for (int i = 0; i < 4096; i++) ptr[i] = 0;
+            return;
+        }
+    }
+
     uart_puts("PAGE FAULT\n");
-    uart_puts("CR2 = ");
-    uart_puthex(cr2);
+    uart_puts("CR2 = "); uart_puthex(cr2);
+    uart_puts("\nERR = "); uart_puthex(error);
     uart_puts("\n");
-
-    uart_puts("ERR = ");
-    uart_puthex(error);
-    uart_puts("\n");
-    uint32_t eip;
-    asm volatile("movl 4(%%ebp), %0" : "=r"(eip));
-    uart_puts("EIP = ");
-    uart_puthex(eip);
-    uart_puts("\n");
-
-
-    while (1)
-        asm volatile("cli; hlt");
+    while (1) asm volatile("cli; hlt");
 }
