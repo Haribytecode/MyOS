@@ -590,7 +590,9 @@ The kernel targets **32-bit x86 / i386**.
 
 ```bash
 make clean
-make iso
+make
+cp kernel.elf iso_root/boot/kernel.elf
+grub2-mkrescue -o kernel.iso iso_root
 ```
 
 ## Run with QEMU
