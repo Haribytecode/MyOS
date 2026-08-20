@@ -1,0 +1,27 @@
+# Build artifacts
+*.o
+*.a
+*.elf
+*.iso
+
+# Build directories
+build/
+dist/
+
+# Logs
+*.log
+make_log.txt
+
+# Backup / temporary files
+*.bak
+*~
+*.swp
+*.swo
+
+# Editor / IDE
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
